@@ -29,7 +29,7 @@ def get_imdb_info(imdb_id):
         parsed = json.loads(decoded)
 
         # 🏹 Extrair o campo 'short' se existir
-        short_description = parsed.get('short')
+        short_description = parsed.get("short")
 
         if short_description is None:
             print(f"Campo 'short' não encontrado para {imdb_id}")
