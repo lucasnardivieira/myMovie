@@ -1,1 +1,11 @@
-/dataset/TMDB_movie_dataset_v11.csv
+# data (rebuild with scripts/prepare_dataset.py)
+/dataset/*.csv
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# env
+.env
