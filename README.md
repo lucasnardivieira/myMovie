@@ -14,7 +14,7 @@
   <img src="docs/screenshots/invite.png" width="190" alt="Partner opening the invite link">
 </p>
 
-<sub>Screenshots use the bundled sample catalog, which has no posters. The live site shows TMDB posters.</sub>
+<sub>Posters and data from TMDB.</sub>
 
 ## Problem
 Couples spend more time scrolling streaming catalogs than watching. myMovie makes the choice short and fair:
@@ -46,6 +46,7 @@ flowchart LR
   $$WR = \frac{v}{v+m} R + \frac{m}{v+m} C$$
 
   Here $R$ is the movie's average, $v$ its vote count, $C$ the mean vote across candidates and $m$ the 70th percentile of vote counts. The catalog keeps the top 2,000 movies with $WR \ge 6.5$ among movies with at least 500 votes.
+- **Watch providers.** TMDB lists ad tiers and store channels as separate providers ("Netflix Standard with Ads", "HBO Max Amazon Channel"). The pipeline collapses them into one logo per service.
 - **Vibes.** Every movie gets vibes derived from its genres. Claude then replaces them with a judgment of how watching it *feels*: a dark comedy isn't "light". Claude also writes a one-line pitch in PT-BR.
 - **Decks.** Each deck is a seeded shuffle of the 60 best-rated movies that fit the filters, so rounds feel fresh without dropping quality.
 

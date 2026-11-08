@@ -148,10 +148,12 @@ def build_catalog(
         movies.append(movie)
         providers.update(found)
 
+    from mymovie.providers import merge_providers
+
     return Catalog(
         generated_at=now().isoformat(timespec="seconds"),
         genres=genres,
         vibes=VIBES,
-        providers=providers,
+        providers=merge_providers(movies, providers),
         movies=movies,
     )
