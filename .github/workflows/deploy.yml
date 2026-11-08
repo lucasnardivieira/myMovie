@@ -1,0 +1,72 @@
+name: Refresh catalog & deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 9 * * 1" # Mondays 06:00 BRT — new movies, ratings and streaming availability
+  workflow_dispatch:
+
+permissions:
+  contents: write # commit the AI tags cache
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      TMDB_API_TOKEN: ${{ secrets.TMDB_API_TOKEN }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+
+      - name: Build catalog from TMDB
+        if: env.TMDB_API_TOKEN != ''
+        run: uv run mymovie build
+
+      - name: Tag new movies with Claude (Batch API)
+        if: env.TMDB_API_TOKEN != '' && env.ANTHROPIC_API_KEY != ''
+        run: uv run mymovie tag
+
+      - name: Commit AI tags cache
+        if: env.ANTHROPIC_API_KEY != '' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/ai_tags.json
+          git diff --cached --quiet || (git commit -m "chore: update AI tags cache [skip ci]" && git push)
+
+      - name: Note when running on the sample catalog
+        if: env.TMDB_API_TOKEN == ''
+        run: echo "::warning::TMDB_API_TOKEN secret not set — deploying with the sample catalog"
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci && npm run build
+        working-directory: web
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
